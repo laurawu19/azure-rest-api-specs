@@ -1569,8 +1569,47 @@
           "description": "The total throughput (MBps) that will be allowed across all VMs mounting the shared disk as ReadOnly. MBps means millions of bytes per second - MB here uses the ISO notation, of powers of 10."
         },
         "diskState": {
-          "$ref": "#/definitions/DiskState",
-          "description": "The state of the disk."
+          "type": "string",
+          "description": "The state of the disk.",
+          "readOnly": true,
+          "enum": [
+            "Unattached",
+            "Attached",
+            "Reserved",
+            "ActiveSAS",
+            "ReadyToUpload",
+            "ActiveUpload"
+          ],
+          "x-ms-enum": {
+            "name": "DiskState",
+            "modelAsString": true,
+            "values": [
+              {
+                "value": "Unattached",
+                "description": "The disk is not being used and can be attached to a VM."
+              },
+              {
+                "value": "Attached",
+                "description": "The disk is currently mounted to a running VM."
+              },
+              {
+                "value": "Reserved",
+                "description": "The disk is mounted to a stopped-deallocated VM"
+              },
+              {
+                "value": "ActiveSAS",
+                "description": "The disk currently has an Active SAS Uri associated with it."
+              },
+              {
+                "value": "ReadyToUpload",
+                "description": "A disk is ready to be created by upload by requesting a write token."
+              },
+              {
+                "value": "ActiveUpload",
+                "description": "A disk is created for upload and a write token has been issued for uploading to it."
+              }
+            ]
+          }
         },
         "encryption": {
           "$ref": "#/definitions/Encryption",
@@ -1595,10 +1634,6 @@
         "diskAccessId": {
           "type": "string",
           "description": "ARM id of the DiskAccess resource for using private endpoints on disks."
-        },
-        "tier": {
-          "type": "string",
-          "description": "Customer visible tier on the disk which indicates the tier to be set on the blob."
         }
       },
       "required": [
@@ -1653,10 +1688,6 @@
           "readOnly": true,
           "description": "The size of the disk in bytes. This field is read only."
         },
-        "diskState": {
-          "$ref": "#/definitions/DiskState",
-          "description": "The state of the snapshot."
-        },
         "uniqueId": {
           "type": "string",
           "readOnly": true,
@@ -1704,7 +1735,7 @@
     "EncryptionSetProperties": {
       "properties": {
         "encryptionType": {
-          "$ref": "#/definitions/DiskEncryptionSetType"
+          "$ref": "#/definitions/EncryptionType"
         },
         "activeKey": {
           "$ref": "#/definitions/KeyVaultAndKeyReference",
@@ -1831,28 +1862,6 @@
         ]
       }
     },
-    "DiskEncryptionSetType": {
-      "type": "string",
-      "description": "The type of key used to encrypt the data of the disk.",
-      "enum": [
-        "EncryptionAtRestWithCustomerKey",
-        "EncryptionAtRestWithPlatformAndCustomerKeys"
-      ],
-      "x-ms-enum": {
-        "name": "DiskEncryptionSetType",
-        "modelAsString": true,
-        "values": [
-          {
-            "value": "EncryptionAtRestWithCustomerKey",
-            "description": "Resource using diskEncryptionSet would be encrypted at rest with Customer managed key that can be changed and revoked by a customer."
-          },
-          {
-            "value": "EncryptionAtRestWithPlatformAndCustomerKeys",
-            "description": "Resource using diskEncryptionSet would be encrypted at rest with 2 layers of encryption. One of the keys is Customer managed and the other key is Platform managed."
-          }
-        ]
-      }
-    },
     "Encryption": {
       "properties": {
         "diskEncryptionSetId": {
@@ -1950,10 +1959,6 @@
         "diskAccessId": {
           "type": "string",
           "description": "ARM id of the DiskAccess resource for using private endpoints on disks."
-        },
-        "tier": {
-          "type": "string",
-          "description": "Customer visible tier on the disk which indicates the tier to be set on the blob."
         }
       },
       "description": "Disk resource update properties."
@@ -1998,56 +2003,13 @@
     "DiskEncryptionSetUpdateProperties": {
       "properties": {
         "encryptionType": {
-          "$ref": "#/definitions/DiskEncryptionSetType"
+          "$ref": "#/definitions/EncryptionType"
         },
         "activeKey": {
           "$ref": "#/definitions/KeyVaultAndKeyReference"
         }
       },
       "description": "disk encryption set resource update properties."
-    },
-    "DiskState": {
-      "type": "string",
-      "description": "This enumerates the possible state of the disk.",
-      "readOnly": true,
-      "enum": [
-        "Unattached",
-        "Attached",
-        "Reserved",
-        "ActiveSAS",
-        "ReadyToUpload",
-        "ActiveUpload"
-      ],
-      "x-ms-enum": {
-        "name": "DiskState",
-        "modelAsString": true,
-        "values": [
-          {
-            "value": "Unattached",
-            "description": "The disk is not being used and can be attached to a VM."
-          },
-          {
-            "value": "Attached",
-            "description": "The disk is currently mounted to a running VM."
-          },
-          {
-            "value": "Reserved",
-            "description": "The disk is mounted to a stopped-deallocated VM"
-          },
-          {
-            "value": "ActiveSAS",
-            "description": "The disk currently has an Active SAS Uri associated with it."
-          },
-          {
-            "value": "ReadyToUpload",
-            "description": "A disk is ready to be created by upload by requesting a write token."
-          },
-          {
-            "value": "ActiveUpload",
-            "description": "A disk is created for upload and a write token has been issued for uploading to it."
-          }
-        ]
-      }
     },
     "CreationData": {
       "properties": {
@@ -2127,11 +2089,6 @@
           "type": "integer",
           "format": "int64",
           "description": "If createOption is Upload, this is the size of the contents of the upload including the VHD footer. This value should be between 20972032 (20 MiB + 512 bytes for the VHD footer) and 35183298347520 bytes (32 TiB + 512 bytes for the VHD footer)."
-        },
-        "logicalSectorSize": {
-          "type": "integer",
-          "format": "int32",
-          "description": "Support customers creating ultra disks with logicalSectorSize 512E. Supported values are 512 and 4096 (default value)."
         }
       },
       "required": [
