@@ -105,9 +105,6 @@
           },
           "Create a managed disk and associate with disk encryption set.": {
             "$ref": "./examples/CreateAManagedDiskWithDiskEncryptionSet.json"
-          },
-          "Create an ultra managed disk with logicalSectorSize 512E": {
-            "$ref": "./examples/CreateAManagedDiskWithLogicalSectorSize.json"
           }
         },
         "x-ms-long-running-operation": true
